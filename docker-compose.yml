@@ -1,0 +1,25 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: erp
+      POSTGRES_PASSWORD: erp_pass
+      POSTGRES_DB: erp_hr
+    ports: ['5432:5432']
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./backend/db/seed.sql:/docker-entrypoint-initdb.d/2-seed.sql
+
+  backend:
+    build: ./backend
+    ports: ['3000:3000']
+    environment:
+      DATABASE_URL: postgres://erp:erp_pass@db:5432/erp_hr
+      JWT_SECRET: change_this_in_production
+      PORT: 3000
+    depends_on: [db]
+
+volumes:
+  pgdata:
